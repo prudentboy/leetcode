@@ -1,0 +1,17 @@
+#!/bin/sh
+
+file=word.txt
+
+awk -F" " '{
+    for(i=1;i<=NF;i++)
+    if($i)
+    {
+        dict[$i]++;
+    }
+}END{
+    for(d in dict)
+    {
+        print d" "dict[d]
+    }
+}' $file | sort -k2rn
+
