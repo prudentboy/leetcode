@@ -1,0 +1,23 @@
+awk '{
+    for(i=1;i<=NF;++i)
+    {
+        dict[NR";"i]=$i
+    }
+}END{
+    for(i=1;i<=NF;i++)
+    {
+        ans="";
+	for(j=1;j<=NR;++j)
+	{
+	    if(ans)
+	    {
+	        ans=ans" "dict[j";"i]
+	    }
+	    else
+	    {
+	        ans=dict[j";"i]
+	    }
+	}
+	print ans;
+    }
+}' file.txt
