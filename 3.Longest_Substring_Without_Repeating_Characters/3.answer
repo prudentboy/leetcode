@@ -1,0 +1,30 @@
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        int charset[128] = {0};
+        int max_length = 0;
+        for(int i = 0; i < s.size(); ++i)
+        {
+            int length = 0;
+            for(int j = 0; j < 128; ++j)
+            {
+                charset[j] = 0;
+            }
+            for(int j = i; j < s.size(); ++j)
+            {
+                if (charset[(int)s[j]] == 0)
+                {
+                    ++length;
+                    charset[(int)s[j]]++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            if (length > max_length)
+                max_length = length;
+        }
+        return max_length;
+    }
+};
