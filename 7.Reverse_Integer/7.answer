@@ -1,0 +1,29 @@
+class Solution {
+public:
+    int reverse(int x) {
+        long long opt = 0;
+        bool negative = false;
+        if (x < 0)
+        {
+            x = -x;
+            negative = true;
+        }
+        std::queue<int> digitals;
+        while(x)
+        {
+            digitals.push(x % 10);
+            x /= 10;
+        }
+        while(!digitals.empty())
+        {
+            opt *= 10;
+            opt += digitals.front();
+            digitals.pop();
+        }
+        if (negative)
+            opt = -opt;
+        if (opt > INT_MAX || opt < INT_MIN)
+            return 0;
+        return opt;
+    }
+};
