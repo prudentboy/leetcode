@@ -1,0 +1,25 @@
+class Solution {
+public:
+    vector<int> nextGreaterElement(vector<int>& findNums, vector<int>& nums) {
+        vector<int> ans(findNums.size(), -1);
+        unordered_map<int, int> pos;
+        int i(0), j(0);
+        for (; i < nums.size(); ++i)
+        {
+            pos[nums[i]] = i;
+        }
+        for (i = 0; i < findNums.size(); ++i)
+        {
+            for (j = pos[findNums[i]] + 1; j < nums.size(); ++j)
+            {
+                //cout << i << j << ' ' << findNums[i] << ans[i] << nums[j] << endl;
+                if (nums[j] > findNums[i])
+                {
+                    ans[i] = nums[j];
+                    break;
+                }
+            }
+        }
+        return ans;
+    }
+};
