@@ -4,15 +4,21 @@ public:
         int len(nums.size());
         if (len < 3) return 0;
         if (len == 3) return nums[0] * nums[1] * nums[2];
-        
-        int maxa(abs(nums[0])), maxb(abs(nums[1])), maxc(abs(nums[2]));
-        int tmp(0);
-        for (int i(3); i < len; ++i)
+
+        sort(nums.begin(), nums.end());
+        int first_pos(nums.size());
+        int maxa(nums[nums.size() - 1]), maxb(nums[nums.size() - 2]), maxc(nums[nums.size() - 3]);
+        for (int i = 0; i < nums.size(); ++i)
         {
-            tmp = abs(nums[i]);
-            if (tmp > maxa) maxa = tmp;
-            else if (tmp > maxb) maxb = tmp;
-            else if (tmp > maxc) maxc = tmp;
+            if (nums[i] >= 0)
+            {
+                first_pos = i;
+                break;
+            }
+        }
+        if (first_pos >= 2 && nums[0] * nums[1] > maxb * maxc)
+        {
+            return nums[0] * nums[1] * maxa;
         }
         return maxa * maxb * maxc;
     }
