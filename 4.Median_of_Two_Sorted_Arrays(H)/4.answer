@@ -1,0 +1,38 @@
+class Solution {
+public:
+    double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+        if (nums1.empty()) return findMedianSortedArray(nums2);
+        if (nums2.empty()) return findMedianSortedArray(nums1);
+        double ans(0.0);
+        bool flag(false);
+        int len = nums1.size() + nums2.size();
+        flag = (len % 2 == 0);
+        int i(0), j(0), index(0), now(0);
+        while (i < nums1.size() && j < nums2.size())
+        {
+            now = (nums1[i] < nums2[j] ? nums1[i++] : nums2[j++]);
+            if (flag and index == len / 2 - 1) ans += now;
+            if (index == len / 2)
+            {
+                ans += now;
+                return flag ? ans / 2.0 : ans;
+            }
+            ++index;
+        }
+        //cout << index << i << j << len << endl;
+        if (index <= len / 2 && i < nums1.size())
+        {
+            if (flag) return (index <= len / 2 - 1) ? ((nums1[len / 2 - index + i] + nums1[len / 2 - index -1 + i]) / 2.0) : ((ans + nums1[len / 2 - index + i]) / 2.0);
+            return nums1[len / 2 - index + i];
+        }
+        if (flag) return (index <= len / 2 - 1) ? ((nums2[len / 2 - index + j] + nums2[len / 2 - index -1 + j]) / 2.0) : ((ans + nums2[len / 2 - index + j]) / 2.0);
+        return nums2[len / 2 - index + j];
+    }
+private:
+    double findMedianSortedArray(vector<int>& num)
+    {
+        size_t len = num.size();
+        if (len % 2 != 0) return num[len / 2];
+        return (num[len / 2] + num[len / 2 - 1]) / 2.0;
+    }
+};
