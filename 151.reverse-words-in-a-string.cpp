@@ -8,21 +8,13 @@ public:
     string reverseWords(string s) {
         if (s.empty()) return s;
 
-        string ans;
-        ans.reserve(s.length());
-        int i, j(s.size() - 1);
-
-        while (i >= 0 and j >= 0)
+        string ans, tmp;
+        istringstream iss(s);
+        while (iss >> tmp)
         {
-            while (j >= 0 && s[j] == ' ') --j;
-            if (j < 0) break;
-            i = j;
-            while (i >= 0 && s[i] != ' ') --i;
-            ans.append(s.substr(i + 1, j - i));
-            ans.append(" ");
-            j = i;
+            ans = ' ' + tmp + ans;
         }
-        if (ans.back() == ' ') ans.pop_back();
+        ans.erase(0, 1);
 
         return ans;
     }
