@@ -10,7 +10,7 @@ public:
         unordered_set<string> dict(wordList.begin(), wordList.end());
         if (dict.count(endWord) == 0) return ans;
 
-        vector<string> path;
+        vector<string> path, tmp;
         path.push_back(beginWord);
         if (beginWord == endWord)
         {
@@ -18,27 +18,27 @@ public:
             return ans;
         }
         
-        unordered_map<string, vector<vector<string>>> table;
-        unordered_map<string, int> level_map;
-        queue<string> q;
-        vector<vector<string>> paths(1,path), tmp;
-        table[beginWord] = paths;
-        level_map[beginWord] = 1;
-        q.push(beginWord);
+        queue<vector<string>> q;
+        unordered_set<string> toDel;
+        q.push(path);
 
         string now;
         char c;
-        int level(0);
+        int level(1), levelMin(INT_MAX);
         
         while (!q.empty())
         {
-            now = q.front();
+            path = q.front();
             q.pop();
-            tmp = table[now];
-            level = level_map[now];
-            //cout << now << ' ' << q.size() << ' ' << table[now].size() << ' ' << level << ' ';
-            //printVecVec(tmp);
-            paths.clear();
+            if (path.size() > level)
+            {
+                for (const auto& s : toDel) dict.erase(s);
+                toDel.clear();
+                level = path.size();
+                if (level > levelMin) break;
+            }
+            //printVec(path);
+            now = path.back();
             for (int i(0); i < now.size(); ++i)
             {
                 c = now[i];
@@ -47,47 +47,23 @@ public:
                     if (j == c) continue;
                     now[i] = j;
                     if (dict.count(now) == 0) continue;
-                    if (table.find(now) == table.end())
+                    toDel.insert(now);
+                    tmp = path;
+                    tmp.push_back(now);
+                    if (now == endWord)
                     {
-                        paths.clear();
-                        for (const auto& t : tmp)
-                        {
-                            vector<string> p(t);
-                            p.push_back(now);
-                            paths.push_back(p);
-                        }
-                        table[now] = paths;
-                        level_map[now] = level + 1;
-                        //cout << "add " << now << endl;
+                        ans.push_back(tmp);
+                        levelMin = level;
                     }
                     else
                     {
-                        paths.clear();
-                        //cout << "**" << level << now << level_map[now] << "**" << endl;
-                        if (level_map[now] <= level) continue;
-                        const vector<vector<string>>& tx = table[now];
-                        for (const auto& t : tx)
-                        {
-                            vector<string> p(t);
-                            if (find(t.begin(), t.end(), now) == t.end()) p.push_back(now);
-                            paths.push_back(p);
-                        }
-                        for (const auto& t : tmp)
-                        {
-                            vector<string> p(t);
-                            if (find(t.begin(), t.end(), now) == t.end()) p.push_back(now);
-                            paths.push_back(p);
-                        }
-                        table[now] = paths;
-                        level_map[now] = level + 1;
-                        //cout << "addb " << now << endl;
+                        q.push(tmp);
                     }
-                    q.push(now);
                 }
                 now[i] = c;
             }
         }
-        if (table.find(endWord) != table.end()) return table[endWord];
+        //printVecVec(ans);
         return ans;
     }
 private:
