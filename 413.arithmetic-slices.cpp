@@ -12,12 +12,21 @@ public:
 
         int ans(0);
         int n(A.size());
-        int first(0), second(1), next(3), len(3);
+        int i(0), j(1), d(A[1] - A[0]), len(1);
 
-        while (first < n - 2)
+        for (i = 1; i < n; ++i)
         {
-            for (second = first + 1; second < )
+            if (A[i] - A[i - 1] == d) ++len;
+            else
+            {
+                d = A[i] - A[i - 1];
+                if (len >= 3) ans += ((len - 1) * (len - 2) >> 1);
+                len = 2;
+            }
+            //cout << i << ' ' << d << ' ' << len << ' ' << ans << endl;
         }
+        if (len >= 3) ans += ((len - 1) * (len - 2) >> 1);
+        return ans;
     }
 };
 // @lc code=end
