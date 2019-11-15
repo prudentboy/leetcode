@@ -17,7 +17,7 @@ public:
         int val(index);
         --size_;
         if (m_.count(index)) index = m_[index];
-        m_[val] = m_.count(size_) ? m_[size_] : size_;
+        if (val != size_) m_[val] = m_.count(size_) ? m_[size_] : size_;
         return {index / col_, index % col_};
     }
     
