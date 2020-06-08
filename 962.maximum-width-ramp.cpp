@@ -8,17 +8,25 @@
 class Solution {
 public:
     int maxWidthRamp(vector<int>& A) {
-        int ans(0);
+        int ans(0), n(A.size());
+        vector<int> decrease;
+        decrease.reserve(n);
+
         int i(0), j(0);
-        for (i = 0; i < A.size() - 1; ++i) {
-            if (A.size() - 1 - i <= ans) { break; }
-            for (j = A.size() - 1; j > i + ans; --j) {
-                if (A[i] <= A[j]) {
-                    ans = max(ans, j - i);
-                    break;
-                }
+        for (i = 0; i < n; ++i) {
+            if (decrease.empty() || A[decrease.back()] > A[i]) {
+                decrease.push_back(i);
             }
         }
+
+        for (i = n - 1; i >= 0; --i) {
+            if (decrease.empty()) { break; }
+            while (!decrease.empty() && A[i] >= A[decrease.back()]) {
+                ans = max(ans, i - decrease.back());
+                decrease.pop_back();
+            }
+        }
+
         return ans;
     }
 };
