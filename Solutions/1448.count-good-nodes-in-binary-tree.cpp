@@ -32,7 +32,7 @@ private:
         val = max(val, root->val);
         goodNodes(root->left, val, ans);
         goodNodes(root->right, val, ans);
-    } 
+    }
 };
 // @lc code=end
 
