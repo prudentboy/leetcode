@@ -16,11 +16,11 @@ public:
         for (auto& edge : blue_edges) { graph[1][edge[0]].push_back(edge[1]); }
         
         auto getShortestPathLen = [&](bool useRed) {
-            vector<bool> visited(n, false);
-            visited[0] = true;
+            vector<int> visited(n);
+            visited[0] = 3;
             queue<int> q;
             q.push(0);
-            int tmp(0), level(0), len(0);
+            int tmp(0), level(0), len(0), edgeType(0);
             while (!q.empty()) {
                 len = q.size();
                 while (len-- > 0) {
@@ -28,10 +28,13 @@ public:
                     //cout << tmp << ' ' << visited[tmp] << ' ' << ans[tmp] << endl;
                     q.pop();
                     if (ans[tmp] == -1 || level < ans[tmp]) { ans[tmp] = level; }
-                    auto& ump = useRed ? graph[0] : graph[1];
+                    edgeType = useRed ? 0 : 1;
+                    auto& ump = graph[edgeType];
                     for (int nxt : ump[tmp]) {
-                        if (visited[nxt]) { continue; }
-                        visited[nxt] = true;
+                        //cout << nxt << ' ' << visited[nxt] << ' ' << edgeType << endl;
+                        if ((visited[nxt] & (1 << edgeType)) > 0) { continue; }
+                        visited[nxt] |= (1 << edgeType);
+                        //cout << nxt << endl;
                         q.push(nxt);
                     }
                 }
