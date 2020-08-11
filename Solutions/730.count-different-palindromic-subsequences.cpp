@@ -13,19 +13,24 @@ public:
         vector<vector<int>> idxs(4);
         for (int i(0); i < n; ++i) { idxs[S[i] - 'a'].push_back(i); }
 
-        vector<vector<int>> memo(n, vector<int>(n));
+        vector<vector<int>> memo(n + 1, vector<int>(n + 1));
 
-        function<int(int, int)> dp(int beg, int end) {
-            if (beg > end) { return 0; }
-            if (beg == end) { return 1; }
+        function<int(int, int)> dp = [&](int beg, int end) {
+            if (beg >= end) { return 0; }
             if (memo[beg][end] > 0) { return memo[beg][end]; }
             long ret(0);
             for (int i(0); i < 4; ++i) {
                 if (idxs[i].empty()) { continue; }
+                auto nbeg(lower_bound(idxs[i].begin(), idxs[i].end(), beg));
+                auto nend(lower_bound(idxs[i].begin(), idxs[i].end(), end) - 1);
+                if (nbeg == idxs[i].end() || *nbeg >= end) { continue; }
+                ++ret;
+                if (nbeg != nend) { ++ret; }
+                ret += dp(*nbeg + 1, *nend);
             }
             return memo[beg][end] = ret % M;
         };
-        return dp(0, n - 1);
+        return dp(0, n);
     }
 };
 // @lc code=end
