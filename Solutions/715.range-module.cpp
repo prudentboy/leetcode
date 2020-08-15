@@ -10,55 +10,36 @@ public:
     RangeModule() {}
     
     void addRange(int left, int right) {
-        auto start = lower_bound(ranges_.begin(), ranges_.end(), make_pair(left, right));
-        if (start != ranges_.begin() && prev(start)->second >= left) { start = prev(start); }
-
-        bool need_insert(true);
-        while (start != ranges_.end()) {
-            if (start->first > right) { break; }
-            if (start->second >= right) {
-                need_insert = false;
-                break;
-            }
-            left = min(left, start->first);
-            right = max(right, start->second);
-            ranges_.erase(start);
+        map<int, int>::iterator l, r;
+        getOverlapRanges(left, right, l, r);
+        if (l != r) {
+            auto last(r);
+            --last;
+            left = min(left, l->first);
+            right = max(right, last->second);
+            ranges_.erase(l, r);
         }
-        if (need_insert) { ranges_.insert(make_pair(left, right)); }
+        ranges_[left] = right;
         //printRange();
     }
     
     bool queryRange(int left, int right) {
-        auto start = lower_bound(ranges_.begin(), ranges_.end(), make_pair(left, right));
-        if (start != ranges_.begin() && prev(start)->second >= left) { start = prev(start); }
-        return start->second >= right;
+        map<int, int>::iterator l, r;
+        getOverlapRanges(left, right, l, r);
+        if (l == r) { return false; }
+        return l->first <= left && l->second >= right;
     }
     
     void removeRange(int left, int right) {
-        auto start = lower_bound(ranges_.begin(), ranges_.end(), make_pair(left, right));
-        if (start != ranges_.begin() && prev(start)->second >= left) { start = prev(start); }
-
-        int left1(-1), left2(-1), right1(-1), right2(-1);
-        while (start != ranges_.end()) {
-            if (start->first > right) { break; }
-            if (start->second >= right) {
-                if (start->first < left) {
-                    left1 = start->first;
-                    right1 = left;
-                }
-                if (start->second > right) {
-                    left2 = right;
-                    right2 = start->second;
-                }
-                ranges_.erase(start);
-                break;
-            }
-            left1 = start->first;
-            right1 = left;
-            ranges_.erase(start);
-        }
-        if (left1 != -1) { ranges_.insert(make_pair(left1, right1)); }
-        if (left2 != -1) { ranges_.insert(make_pair(left2, right2)); }
+        map<int, int>::iterator l, r;
+        getOverlapRanges(left, right, l, r);
+        if (l == r) { return; }
+        auto last(r);
+        --last;
+        int beg(min(l->first, left)), end(max(last->second, right));
+        ranges_.erase(l, r);
+        if (beg < left) { ranges_[beg] = left; }
+        if (end > right) { ranges_[right] = end; }
         //printRange();
     }
 private:
@@ -66,8 +47,14 @@ private:
         for (auto& p : ranges_) { cout << p.first << '-' << p.second << ' '; }
         cout << endl;
     }
+    void getOverlapRanges(int left, int right, map<int, int>::iterator& l, map<int, int>::iterator& r) {
+        l = ranges_.upper_bound(left);
+        r = ranges_.upper_bound(right);
+        if (l == ranges_.begin()) { return; }
+        if ((--l)->second < left) { ++l; }
+    }
 private:
-    set<pair<int, int>> ranges_;
+    map<int, int> ranges_;
 };
 
 /**
