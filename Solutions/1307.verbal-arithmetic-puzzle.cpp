@@ -8,18 +8,59 @@
 class Solution {
 public:
     bool isSolvable(vector<string>& words, string result) {
-        unordered_set<char> ust;
+        vector<vector<char>> chars(result.size());
+        vector<bool> isFirstNum(26, false);
         for (string& word : words) {
             if (word.size() > result.size()) { return false; }
-            for (char c : word) { ust.insert(c); }
+            if (word.size() > 1) { isFirstNum[word[0] - 'A'] = true; }
+            for (auto iter(word.rbegin()); iter != word.rend(); ++iter) {
+                chars[iter - word.rbegin()].push_back(*iter);
+            }
         }
-        for (char c : result) { ust.insert(c); }
+        for (auto iter(result.rbegin()); iter != result.rend(); ++iter) {
+            chars[iter - result.rbegin()].push_back(*iter);
+        }
         
-        const int n(ust.size());
-        int i(0);
-        unordered_map<char, int> ump;
-        for (char c : ust) { ump[c] = i++; }
+        vector<int> dict(26, -1);
+        vector<bool> used(10, false);
+        function<bool(int, int, int)> dfs = [&](int digit, int idx, int cur) {
+            cout << digit << ' ' << idx << ' ' << cur << endl;
+            if (digit == chars.size()) {
+                return cur == 0;
+            }
+            int v(-1);
+            if (dict[chars[digit][idx] - 'A'] != -1) {
+                v = dict[chars[digit][idx]];
+                if (idx + 1 == chars[digit].size()) {
+                    if ((cur - v) % 10 != 0) { return false; }
+                    return dfs(digit + 1, 0, (cur - v) / 10);
+                } else {
+                    return dfs(digit, idx + 1, cur + v);
+                }
+            } else {
+                for (int i(0); i < 10; ++i) {
+                    if (used[i]) { continue; }
+                    if (i == 0 && isFirstNum[chars[digit][idx] - 'A']) { continue; }
+                    v = dict[chars[digit][idx] - 'A'] = i;
+                    used[i] = true;
+                    if (idx + 1 == chars[digit].size()) {
+                        if ((cur - v) % 10 != 0) {
+                            dict[chars[digit][idx]] = -1;
+                            used[i] = false;
+                            continue;
+                        }
+                        if (dfs(digit + 1, 0, (cur - v) / 10)) { return true; }
+                    } else {
+                        if (dfs(digit, idx + 1, cur + v)) { return true; }
+                    }
+                    dict[chars[digit][idx] - 'A'] = -1;
+                    used[i] = false;
+                }
+            }
+            return false;
+        };
 
+        /*
         vector<int> nums(n);
         auto getNum = [&](string_view word) -> int {
             cout << word << ':' << endl;
@@ -47,22 +88,9 @@ public:
             }
             return sum == result_num;
         };
+        */
 
-        vector<bool> visited(10, false);
-        function<bool(int)> dfs = [&](int idx) {
-            cout << idx << endl;
-            if (idx == n) { return check(); }
-            for (int i(0); i < 10; ++i) {
-                if (visited[i]) { continue; }
-                nums[idx] = i;
-                visited[i] = true;
-                if (dfs(idx + 1)) { return true; }
-                visited[i] = false;
-            }
-            return false;
-        };
-
-        return dfs(0);
+        return dfs(0, 0, 0);
     }
 };
 // @lc code=end
