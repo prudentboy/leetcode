@@ -17,6 +17,7 @@ public:
                 chars[iter - word.rbegin()].push_back(*iter);
             }
         }
+        if (result.size() > 1) { isFirstNum[result.front() - 'A'] = true; }
         for (auto iter(result.rbegin()); iter != result.rend(); ++iter) {
             chars[iter - result.rbegin()].push_back(*iter);
         }
@@ -24,13 +25,11 @@ public:
         vector<int> dict(26, -1);
         vector<bool> used(10, false);
         function<bool(int, int, int)> dfs = [&](int digit, int idx, int cur) {
-            cout << digit << ' ' << idx << ' ' << cur << endl;
-            if (digit == chars.size()) {
-                return cur == 0;
-            }
+            if (digit == chars.size()) { return cur == 0; }
+
             int v(-1);
             if (dict[chars[digit][idx] - 'A'] != -1) {
-                v = dict[chars[digit][idx]];
+                v = dict[chars[digit][idx] - 'A'];
                 if (idx + 1 == chars[digit].size()) {
                     if ((cur - v) % 10 != 0) { return false; }
                     return dfs(digit + 1, 0, (cur - v) / 10);
@@ -45,7 +44,7 @@ public:
                     used[i] = true;
                     if (idx + 1 == chars[digit].size()) {
                         if ((cur - v) % 10 != 0) {
-                            dict[chars[digit][idx]] = -1;
+                            dict[chars[digit][idx] -'A'] = -1;
                             used[i] = false;
                             continue;
                         }
@@ -59,36 +58,6 @@ public:
             }
             return false;
         };
-
-        /*
-        vector<int> nums(n);
-        auto getNum = [&](string_view word) -> int {
-            cout << word << ':' << endl;
-            if (word.size() > 1 && nums[ump[word.front()]] == 0) { return -1; }
-            int ret(0);
-            for (char c : word) {
-                ret *= 10;
-                ret += nums[ump[c]];
-            }
-            cout << ' ' << ret << endl;
-            return ret;
-        };
-        auto check = [&]() -> bool {
-            for (char c : ust) {
-                cout << c << ':' << nums[ump[c]] << endl;
-            }
-            const int m(words.size());
-            vector<int> word_nums;
-            for (auto& word : words) { word_nums.push_back(getNum(word)); }
-            int result_num(getNum(result));
-            int sum(0);
-            for (int num : word_nums) {
-                if (num < 0) { return false; }
-                sum += num;
-            }
-            return sum == result_num;
-        };
-        */
 
         return dfs(0, 0, 0);
     }
