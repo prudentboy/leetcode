@@ -34,25 +34,25 @@ private:
                     num += exp[i++] - '0';
                 }
                 --i;
-                cout << num << endl;
-                Polys tmp({{}, num});
+                Polys tmp;
+                tmp[{}] = num;
                 if (!operatorStk.empty() && operatorStk.top() == '*') {
                     multi(tmp, pStk.top());
                     operatorStk.pop();
+                    pStk.pop();
                 }
-                pStk.push(move(tmp));
+                pStk.push(tmp);
                 continue;
             }
             // variable
             if (isalpha(exp[i])) {
-                int beg(i), len(1);
+                int beg(i), len(0);
                 while (i < exp.size() && isalpha(exp[i])) {
                     ++i;
                     ++len;
                 }
                 --i;
                 string_view var(exp.substr(beg, len));
-                cout << var << endl;
                 Polys tmp;
                 if (known_.count(var) > 0) {
                     tmp[{}] = known_[var];
@@ -61,14 +61,16 @@ private:
                         vars_.push_back(var);
                         fv_idx_[var] = vars_.size() - 1;
                     }
-                    vector<int> k(fv_idx_[var] + 1);
+                    vector<int> k(20);
                     k[fv_idx_[var]] = 1;
                     tmp[k] = 1;
                 }
                 if (!operatorStk.empty() && operatorStk.top() == '*') {
                     multi(tmp, pStk.top());
                     operatorStk.pop();
+                    pStk.pop();
                 }
+                pStk.push(tmp);
                 continue;
             }
             // oprators
@@ -80,17 +82,29 @@ private:
                 operatorStk.push('*');
             } else if (exp[i] == '(') {
                 operatorStk.push('(');
+                operatorStk.push('+');
             } else if (exp[i] == ')') {
                 Polys tmp;
                 tmp[{}] = 0;
+                //cout << pStk.size() << '|' << operatorStk.size() << endl;
                 while (operatorStk.top() != '(') {
                     calculate(tmp, pStk.top(), operatorStk.top());
                     operatorStk.pop();
                     pStk.pop();
                 }
                 operatorStk.pop();
+                if (!operatorStk.empty() && operatorStk.top() == '*') {
+                    multi(tmp, pStk.top());
+                    operatorStk.pop();
+                    pStk.pop();
+                }
                 pStk.push(tmp);
+                //cout << pStk.size() << '|' << operatorStk.size() << endl;
+                //Print(tmp);
             }
+            //cout << pStk.size() << '|' << operatorStk.size() << endl;
+            //if (!pStk.empty()) { Print(pStk.top()); }
+            //if (!operatorStk.empty()) { cout << operatorStk.top() << endl; }
         }
         Polys ret;
         ret[{}] = 0;
@@ -128,7 +142,7 @@ private:
         for (auto& p : y) {
             auto iter(x.find(p.first));
             if (iter == x.end()) {
-                x.insert(p);
+                x[p.first] = -p.second;
             } else {
                 iter->second -= p.second;
             }
@@ -139,9 +153,15 @@ private:
         for (auto& xx : x) {
             for (auto& yy : y) {
                 int coef(xx.second * yy.second);
-                vector<int> k(vars_.size());
-                for (int i(0); i < xx.first.size(); ++i) { k[i] += xx.first[i]; }
-                for (int i(0); i < yy.first.size(); ++i) { k[i] += yy.first[i]; }
+                vector<int> k(20);
+                int i(0);
+                for (i = 0; i < xx.first.size(); ++i) { k[i] += xx.first[i]; }
+                for (i = 0; i < yy.first.size(); ++i) { k[i] += yy.first[i]; }
+                for (i = 0; i < k.size(); ++i) { if (k[i] != 0) { break; } }
+                if (i == k.size()) {
+                    ret[{}] += coef;
+                    continue;
+                }
                 auto iter(ret.find(k));
                 if (iter == ret.end()) {
                     ret[k] = coef;
@@ -150,28 +170,51 @@ private:
                 }
             }
         }
-        swap(x, ret);
+        /*
+        Print(x);
+        cout << "-------" << endl;
+        Print(y);
+        cout << "-------" << endl;
+        Print(ret);
+        */
+        x = ret;
     }
     vector<string> getAnswer(const Polys& ps) {
-        vector<string> ans;
-        /*
+        //Print(ps);
+        vector<pair<vector<string_view>, int>> vec;
         for (auto& p : ps) {
             if (p.second == 0) { continue; }
-            string tmp(to_string(p.second));
             vector<string_view> fv;
             for (int i(0); i < p.first.size(); ++i) {
-                while (p.first[i]-- > 0) { fv.push_back(vars_[i]); }
+                int cnt(p.first[i]);
+                while (cnt-- > 0) { fv.push_back(vars_[i]); }
             }
-            sort(fv.begin(), fv.end(), [](const string))
-            for (auto& str : p.first) {
-                if (str.empty()) { continue; }
-                tmp += '*';
-                tmp += str;
+            sort(fv.begin(), fv.end());
+            vec.push_back({fv, p.second});
+        }
+        sort(vec.rbegin(), vec.rend(), [](const pair<vector<string_view>, int>& left, const pair<vector<string_view>, int>& right){
+            if (left.first.size() == right.first.size()) { return left.first > right.first; }
+            return left.first.size() < right.first.size();
+        });
+        vector<string> ans;
+        for (auto& p : vec) {
+            string tmp(to_string(p.second));
+            if (!p.first.empty()) {
+                for (auto str : p.first) {
+                    tmp += '*';
+                    tmp += string(str);
+                }
             }
             ans.emplace_back(move(tmp));
         }
-        */
         return ans;
+    }
+    void Print(const Polys& pol) {
+        for (auto& p : pol) {
+            for (int i(0); i < p.first.size(); ++i) { cout << vars_[i] << ' '; }
+            cout << ':';
+            cout << p.second << endl;
+        }
     }
 private:
     vector<string_view> vars_;
